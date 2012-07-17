@@ -147,7 +147,12 @@ module CalendarHelper
 
     first.upto(last) do |cur|
       cell_text, cell_attrs = block.call(cur)
-      cell_text  ||= cur.mday
+      
+      # DD: begin custom hack
+      cell_text  ||= "<a id='day-#{cur.year}-#{cur.month}-#{cur.day}' href='#checkins/date/#{cur.year}-#{cur.month}-#{cur.mday}'>#{cur.mday}</a>"
+      # cell_text  ||= cur.mday
+      # DD: end custom hack
+
       cell_attrs ||= {}
       cell_attrs[:headers] = th_id(cur, options[:table_id])
       cell_attrs[:class] ||= options[:day_class]
@@ -206,7 +211,11 @@ module CalendarHelper
     cell_attrs[:class] = options[:other_month_class]
     cell_attrs[:class] += " weekendDay" if weekend?(date)
 
-    cell_text = date.day
+    # DD: begin custom hack
+    cell_text  = "<a id='day-#{date.year}-#{date.month}-#{date.day}' href='#checkins/date/#{date.year}-#{date.month}-#{date.day}'>#{date.day}</a>"
+    # cell_text = date.day
+    # DD: end custom hack
+
     if options[:accessible]
       cell_text += %(<span class="hidden"> #{month_names[date.month]}</span>)
     end
