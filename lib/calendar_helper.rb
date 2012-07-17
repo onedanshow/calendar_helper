@@ -142,16 +142,14 @@ module CalendarHelper
 
     # previous month
     beginning_of_week(first, first_weekday).upto(first - 1) do |d|
-      cal << generate_other_month_cell(d, options)
+      cell_text, cell_attrs = block.call(d)
+      cal << generate_other_month_cell(cell_text, cell_attrs, d, options)
     end unless first.wday == first_weekday
 
     first.upto(last) do |cur|
       cell_text, cell_attrs = block.call(cur)
       
-      # DD: begin custom hack
-      cell_text  ||= "<a id='day-#{cur.year}-#{cur.month}-#{cur.day}' href='#checkins/date/#{cur.year}-#{cur.month}-#{cur.mday}'>#{cur.mday}</a>"
-      # cell_text  ||= cur.mday
-      # DD: end custom hack
+      cell_text  ||= cur.mday
 
       cell_attrs ||= {}
       cell_attrs[:headers] = th_id(cur, options[:table_id])
@@ -166,7 +164,8 @@ module CalendarHelper
 
     # next month
     (last + 1).upto(beginning_of_week(last + 7, first_weekday) - 1)  do |d|
-      cal << generate_other_month_cell(d, options)
+      cell_text, cell_attrs = block.call(d)
+      cal << generate_other_month_cell(cell_text, cell_attrs, d, options)
     end unless last.wday == last_weekday
 
     cal << "</tr></tbody></table>"
@@ -205,22 +204,20 @@ module CalendarHelper
     "<td #{cell_attrs}>#{cell_text}</td>"
   end
 
-  def generate_other_month_cell(date, options)
-    cell_attrs = {}
-    cell_attrs[:headers] = th_id(date, options[:table_id])
-    cell_attrs[:class] = options[:other_month_class]
-    cell_attrs[:class] += " weekendDay" if weekend?(date)
+  def generate_other_month_cell(cell_text,cell_attrs,date, options)
 
-    # DD: begin custom hack
-    cell_text  = "<a id='day-#{date.year}-#{date.month}-#{date.day}' href='#checkins/date/#{date.year}-#{date.month}-#{date.day}'>#{date.day}</a>"
-    # cell_text = date.day
-    # DD: end custom hack
+    cell_attrs ||= {}
+    cell_attrs[:headers] ||= th_id(date, options[:table_id])
+    cell_attrs[:class] ||= options[:other_month_class]
+    cell_attrs[:class] += " weekendDay" if weekend?(date)
+  
+    cell_text ||= date.day
 
     if options[:accessible]
       cell_text += %(<span class="hidden"> #{month_names[date.month]}</span>)
     end
 
-    generate_cell(date.day, cell_attrs)
+    generate_cell(cell_text, cell_attrs)
   end
 
   # Calculates id for th element.
